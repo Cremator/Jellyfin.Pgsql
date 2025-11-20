@@ -1,12 +1,20 @@
 [
-    {
-        "guid": "ecb9be01-627b-4904-a28e-8d0d5b481272",
-        "name": "Postgre-SQL For Jellyfin",
-        "description": "Experimental PostgreSQL provider for Jellyfin.",
-        "overview": "Jellyfin",
-        "owner": "JPVenson",
-        "category": "General",
-        "versions": [
-        ]
-    }
+  {
+    "guid": "ecb9be01-627b-4904-a28e-8d0d5b481272",
+    "name": "Postgre-SQL For Jellyfin",
+    "description": "Experimental PostgreSQL provider for Jellyfin.",
+    "overview": "Jellyfin",
+    "owner": "JPVenson",
+    "category": "General",
+    "versions": [
+      {
+        "version": "2025.11.20.12",
+        "changelog": "- remove v from VERSION\n- bump version\n- add releases workflow\n- Merge remote-tracking branch 'refs/remotes/origin/master'\n- Updated packages\n- Merge branch 'master' of https://github.com/JPVenson/Jellyfin.Pgsql\n- Update pgsql to 18\n- Merge pull request #13 from rogly/master\n- fix starlet typo\n- Update README.md\n- Merge remote-tracking branch 'refs/remotes/origin/master'\n- Add sqlite -> pgsql migration\n- Update README.md\n- Update README.md\n- dockerfile context comment\n- Update dockerfile\n- add manifest\n- Add ef-tools\n- clean up dockerfile\n- Merge pull request #11 from rogly-net/master\n- fix syntax error for CreateIndex filters\n- Update migrations to 10.11-RC8\n- Update readme\n- Upgrade JF repo Fix Design reference\n- Merge pull request #10 from evan314159/pr14795-alignment\n- Add EnableSensitiveDataLogging database.xml option as per SQLite\n- Add PR 14795 migration and bump dependencies to match Jellyfin master\n- Correct Designer and Model Snapshot to match database\n- Revert \"Postgres support for Peoples cleanup\"\n- Merge pull request #5 from evan314159/pgsql-plugin\n- Merge pull request #9 from evan314159/versions\n- update libraries to match Jellyfin 10.11.0-rc5 versions\n- Postgres support for Peoples cleanup\n- Merge branch 'JPVenson:master' into master\n- Merge pull request #4 from evan314159/pgsql-plugin\n- updated for new 10.11.0-rc4 interface, minimum version is now 10.11.0-rc4\n- update for 10.11.0-rc4 interface, minimum version is now 10.11.0-rc4\n- Update scripts to dotnet 9\n- update JF reference\n- Merge pull request #3 from evan314159/pgsql-plugin\n- set Include Error Detail and Log Parameters via environment variables, log full cconnection string excluding password\n- enable Postgres error detail\n- Merge pull request #2 from evan314159/pgsql-plugin\n- convert times to UTC as per SQLite provider\n- Merge pull request #1 from evan314159/pgsql-plugin\n- add Postgres health checks\n- remove duplicate code, interface error\n- file not required\n- - use unique plugin identifiers - all configuration via environment variables to support ease of deployment in containers - use C collation to be equivalent to SQLite - migrations updated for Postgres SQL dialect - database optimisation and shutdown cleanup tasks - pgsql database backup support - Docker container support with Dockerfile and example docker-compose.yaml - packaging script to ease copying plugin to container host - use current component versions based on 10.11-rc3 and target 10.11 ABI\n- Add initial migration and Provider\n- Add JF as submodule\n- Add code container and setup dependencies\n- Initial commit",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Cremator/Jellyfin.Pgsql/releases/download/v2025.11.20.12/jellyfin-pgsql_2025.11.20.12.zip",
+        "checksum": "a9776dbe0bd11b759eb5096271b4f9b2",
+        "timestamp": "2025-11-20T12:24:27Z"
+      }
+    ]
+  }
 ]

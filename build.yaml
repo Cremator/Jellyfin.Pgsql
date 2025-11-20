@@ -1,17 +1,16 @@
 ---
 name: "PostgreSQL Database"
 guid: "27e7ad18-ea71-4b19-b1a9-6e4c2e4d5e18"
-version: "1.0.0.0"
+version: "2025.11.20.12"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 overview: "PostgreSQL database provider for Jellyfin"
 description: >
-  Adds PostgreSQL database support to Jellyfin server. Configure using
-  standard PostgreSQL environment variables (POSTGRES_HOST, POSTGRES_PORT,
-  POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD).
+  Adds PostgreSQL database support to Jellyfin server. Configure using standard PostgreSQL environment variables (POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD).
+
 category: "General"
 owner: "jellyfin"
 artifacts:
-- "Jellyfin.Plugin.Pgsql.dll"
-changelog: >
-  Initial PostgreSQL database provider implementation
+  - "Jellyfin.Plugin.Pgsql.dll"
+changelog: >-
+  ["remove v from VERSION","bump version","add releases workflow","Merge remote-tracking branch 'refs/remotes/origin/master'","Updated packages","Merge branch 'master' of https://github.com/JPVenson/Jellyfin.Pgsql","Update pgsql to 18","Merge pull request #13 from rogly/master","fix starlet typo","Update README.md","Merge remote-tracking branch 'refs/remotes/origin/master'","Add sqlite -> pgsql migration","Update README.md","Update README.md","dockerfile context comment","Update dockerfile","add manifest","Add ef-tools","clean up dockerfile","Merge pull request #11 from rogly-net/master","fix syntax error for CreateIndex filters","Update migrations to 10.11-RC8","Update readme","Upgrade JF repo Fix Design reference","Merge pull request #10 from evan314159/pr14795-alignment","Add EnableSensitiveDataLogging database.xml option as per SQLite","Add PR 14795 migration and bump dependencies to match Jellyfin master","Correct Designer and Model Snapshot to match database","Revert \"Postgres support for Peoples cleanup\"","Merge pull request #5 from evan314159/pgsql-plugin","Merge pull request #9 from evan314159/versions","update libraries to match Jellyfin 10.11.0-rc5 versions","Postgres support for Peoples cleanup","Merge branch 'JPVenson:master' into master","Merge pull request #4 from evan314159/pgsql-plugin","updated for new 10.11.0-rc4 interface, minimum version is now 10.11.0-rc4","update for 10.11.0-rc4 interface, minimum version is now 10.11.0-rc4","Update scripts to dotnet 9","update JF reference","Merge pull request #3 from evan314159/pgsql-plugin","set Include Error Detail and Log Parameters via environment variables, log full cconnection string excluding password","enable Postgres error detail","Merge pull request #2 from evan314159/pgsql-plugin","convert times to UTC as per SQLite provider","Merge pull request #1 from evan314159/pgsql-plugin","add Postgres health checks","remove duplicate code, interface error","file not required","- use unique plugin identifiers - all configuration via environment variables to support ease of deployment in containers - use C collation to be equivalent to SQLite - migrations updated for Postgres SQL dialect - database optimisation and shutdown cleanup tasks - pgsql database backup support - Docker container support with Dockerfile and example docker-compose.yaml - packaging script to ease copying plugin to container host - use current component versions based on 10.11-rc3 and target 10.11 ABI","Add initial migration and Provider","Add JF as submodule","Add code container and setup dependencies","Initial commit"]
