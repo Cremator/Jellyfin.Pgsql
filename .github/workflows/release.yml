@@ -1,0 +1,192 @@
+name: Release
+
+on:
+  push:
+    paths:
+      - VERSION
+  workflow_dispatch:
+    inputs:
+      preview:
+        description: 'Create preview release'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Ensures full history for changelog generation
+
+      - name: Determine release type
+        id: release_type
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.preview }}" == "true" ]] || [[ "${{ github.ref }}" != "refs/heads/master" ]]; then
+            echo "IS_PREVIEW=true" >> $GITHUB_ENV
+            echo "MANIFEST_FILE=manifest-preview.json" >> $GITHUB_ENV
+          else
+            echo "IS_PREVIEW=false" >> $GITHUB_ENV
+            echo "MANIFEST_FILE=manifest.json" >> $GITHUB_ENV
+          fi
+
+      - name: Get version from VERSION file
+        id: get_version
+        run: |
+          BASE_VERSION=$(cat VERSION)
+          echo "BASE_VERSION=${BASE_VERSION}" >> $GITHUB_ENV
+          echo "VERSION=${BASE_VERSION}" >> $GITHUB_ENV
+          if [[ "${{ env.IS_PREVIEW }}" == "true" ]]; then
+            echo "TAG_VERSION=${BASE_VERSION}-preview" >> $GITHUB_ENV
+          else
+            echo "TAG_VERSION=${BASE_VERSION}" >> $GITHUB_ENV
+          fi
+
+      - name: Get last release tag
+        id: get_last_release
+        run: |
+          # Get the most recent tag
+          last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$last_tag" ]; then
+            echo "No previous tags found, using all commits"
+            echo "FROM_REF=HEAD~10" >> $GITHUB_ENV
+          else
+            echo "Last tag: $last_tag"
+            echo "FROM_REF=$last_tag" >> $GITHUB_ENV
+          fi
+
+      - name: Generate Changelog
+        uses: Bullrich/generate-release-changelog@master
+        id: changelog
+        env:
+          REPO: ${{ github.repository }}
+          from: ${{ env.FROM_REF }}
+          to: "HEAD"
+
+      - name: Format Changelog to JSON
+        id: format_changelog
+        env:
+          CHANGELOG_TEXT: ${{ steps.changelog.outputs.changelog }}
+        run: |
+          # Use environment variable to safely handle special characters
+          echo "$CHANGELOG_TEXT" | sed -E 's/ - [a-f0-9]{7} //' | jq -R -s -c 'split("\n") | map(select(length > 0))' > changelog.json
+          formatted_changelog=$(cat changelog.json)
+          echo "FORMATTED_CHANGELOG=$formatted_changelog" >> $GITHUB_ENV
+
+      - name: Update `build.yaml`
+        run: |
+          yq eval '
+            .version = strenv(BASE_VERSION) |
+            .targetAbi = "10.11.0.0" |
+            .framework = "net9.0" |
+            .changelog = strenv(FORMATTED_CHANGELOG)
+          ' build.yaml > build.tmp.yaml && mv build.tmp.yaml build.yaml
+
+      - name: Print build.yaml
+        run: |
+          echo "Updated build.yaml:"
+          cat build.yaml
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Build Jellyfin Plugin
+        uses: oddstr13/jellyfin-plugin-repository-manager@v0.5.0
+        id: jprm
+        with:
+          dotnet-target: net9.0
+
+      - name: Generate Release Checksums
+        run: |
+          hash="$(md5sum ${{ steps.jprm.outputs.artifact }} | cut -d ' ' -f 1)"
+          echo "$hash $(basename ${{ steps.jprm.outputs.artifact }})" >> checksums.md5
+          echo "CHECKSUM=$hash" >> $GITHUB_ENV
+
+      - name: Create preview manifest if needed
+        if: env.IS_PREVIEW == 'true'
+        run: |
+          if [ ! -f manifest-preview.json ]; then
+            cp manifest.json manifest-preview.json
+          fi
+
+      - name: Update manifest file
+        run: |
+          timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          # Use VERSION (without -preview) in the zip filename so Jellyfin can read it
+          sourceUrl="https://github.com/Cremator/Jellyfin.Pgsql/releases/download/v$TAG_VERSION/jellyfin-pgsql_$VERSION.zip"
+          # Use jq to safely extract changelog
+          formatted_changelog=$(echo "$FORMATTED_CHANGELOG" | jq -r '.[]' | sed 's/^/- /' || echo "No changelog available")
+          if [[ "${{ env.IS_PREVIEW }}" == "true" ]]; then
+            changelog_with_note="⚠️ PREVIEW RELEASE - For testing only\n\n${formatted_changelog}"
+          else
+            changelog_with_note="${formatted_changelog}"
+          fi
+          jq --arg strippedversion "$VERSION" \
+            --arg changelog "$changelog_with_note" \
+            --arg checksum "$CHECKSUM" \
+            --arg timestamp "$timestamp" \
+            --arg sourceUrl "$sourceUrl" \
+            '.[0].versions |= [{
+              version: $strippedversion,
+              changelog: $changelog,
+              targetAbi: "10.11.0.0",
+              sourceUrl: $sourceUrl,
+              checksum: $checksum,
+              timestamp: $timestamp
+            }] + .' \
+            ${{ env.MANIFEST_FILE }} > manifest.tmp.json && mv manifest.tmp.json ${{ env.MANIFEST_FILE }}
+
+      - name: Commit Updated Files
+        if: env.IS_PREVIEW == 'false'
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add build.yaml manifest.json
+          git commit -m "Update build.yaml and manifest.json for release version $TAG_VERSION"
+          git push origin HEAD:master
+
+      - name: Commit Preview Files
+        if: env.IS_PREVIEW == 'true'
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add build.yaml manifest-preview.json
+          git commit -m "Update build.yaml and manifest-preview.json for preview version $TAG_VERSION" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref_name }} || echo "Nothing to push"
+
+      - name: Generate Final Changelog (including update commit)
+        uses: Bullrich/generate-release-changelog@master
+        id: final_changelog
+        env:
+          REPO: ${{ github.repository }}
+          from: ${{ env.FROM_REF }}
+          to: "HEAD"
+
+      - name: Create Tag
+        env:
+          TAG_VERSION: ${{ env.TAG_VERSION }}
+        run: |
+          echo "Creating tag v${TAG_VERSION}"
+          git tag -a "v${TAG_VERSION}" -m "Release version v${TAG_VERSION}"
+          git push origin "v${TAG_VERSION}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        env:
+          TAG_VERSION: ${{ env.TAG_VERSION }}
+        with:
+          tag_name: "v${{ env.TAG_VERSION }}"
+          name: "${{ env.IS_PREVIEW == 'true' && 'Preview Release' || 'Release' }} v${{ env.TAG_VERSION }}"
+          body: ${{ steps.final_changelog.outputs.changelog }}
+          prerelease: ${{ env.IS_PREVIEW == 'true' }}
+          files: |
+            checksums.md5
+            ${{ steps.jprm.outputs.artifact }}
