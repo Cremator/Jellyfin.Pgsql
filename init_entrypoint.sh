@@ -1,5 +1,5 @@
 #!/bin/bash
-
+id -u
 # Clean and create plugins directory, then copy plugin
 rm -rf /config/plugins/PostgreSQL
 mkdir -p /config/plugins/PostgreSQL
