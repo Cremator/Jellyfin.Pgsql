@@ -6,13 +6,12 @@ mkdir -p /config/plugins/PostgreSQL
 cp -r /jellyfin-pgsql/plugin/* /config/plugins/PostgreSQL/
 
 # Create database.xml if it doesn't exist
-if [ ! -f /config/config/database.xml ]; then
-    mkdir -p /config/config
-    cp /jellyfin-pgsql/database.xml /config/config/database.xml
+if [ ! -f /config/database.xml ]; then
+    cp /jellyfin-pgsql/database.xml /config/database.xml
 fi
 
 # Check database.xml correctly configured
-ConfiguredPluginName="$(xmlstarlet select -t -m '//DatabaseConfigurationOptions/CustomProviderOptions/PluginName' -v . -n /config/config/database.xml)"
+ConfiguredPluginName="$(xmlstarlet select -t -m '//DatabaseConfigurationOptions/CustomProviderOptions/PluginName' -v . -n /config/database.xml)"
 if [ "${ConfiguredPluginName}" != "PostgreSQL" ]; then
     echo "Plugin name is not set to PostgreSQL. abort."
     exit 2;
@@ -28,7 +27,7 @@ fi
 ConnectionString="Password=${POSTGRES_PASSWORD};User ID=${POSTGRES_USER};Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB}"
 
 # Update database.xml with connection string
-xmlstarlet edit -L -u '//DatabaseConfigurationOptions/CustomProviderOptions/ConnectionString' -v "${ConnectionString}" /config/config/database.xml
+xmlstarlet edit -L -u '//DatabaseConfigurationOptions/CustomProviderOptions/ConnectionString' -v "${ConnectionString}" /config/database.xml
 
 # Migrate jellyfin.db if exists
 if [ ! -f /config/data/jellyfin.db ]; then
