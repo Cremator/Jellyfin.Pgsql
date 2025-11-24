@@ -54,7 +54,6 @@ chmod 644 Dockerfile entrypoint.sh database.xml jellyfin.ruleset Jellyfin.Plugin
     Jellyfin.Plugin.Pgsql/Migrations/JellyfinDbContextModelSnapshot.cs
 
 tar -czf "$PACKAGE_NAME" \
-    --uid=0 --gid=0 \
     Dockerfile \
     entrypoint.sh \
     database.xml \

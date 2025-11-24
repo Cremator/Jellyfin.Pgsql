@@ -5,4 +5,3 @@ obj/
 artifacts
 
 .devcontainer/pgsql/
-docker/jellyfin.PgsqlMigrator.dll
